@@ -58,6 +58,12 @@ async function main() {
         message: `${className} is now open!`,
       });
     });
+
+    console.log(
+      changedStatusClasses.length === 0
+        ? `No status changed ${new Date().toLocaleString()}`
+        : "Classes status changed"
+    );
   }, freq);
 }
 
