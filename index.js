@@ -3,6 +3,7 @@ const { urls, freq, exchangeUrls } = require("./constants.js");
 const puppeteer = require("puppeteer");
 const open = require("open");
 const player = require("play-sound")((opts = {}));
+const notifier = require("node-notifier");
 
 async function scrape(url) {
   const browser = await puppeteer.launch();
@@ -51,6 +52,10 @@ async function main() {
       open(exchangeUrls[className]);
       player.play("alertSound.mp3", function (err) {
         if (err) throw err;
+      });
+      notifier.notify({
+        title: "CLASS OPENED",
+        message: `${className} is now open!`,
       });
     });
   }, freq);
