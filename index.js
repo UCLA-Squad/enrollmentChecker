@@ -62,6 +62,36 @@ async function notifyOnStatusChange() {
   );
 }
 
+// async function selectShadowElement() {
+//   try {
+//     const container = document.querySelector(
+//       "#block-mainpagecontent > div > div > div > div > ucla-sa-soc-app"
+//     );
+//     return container.shadowRoot
+//       .querySelector("#select_filter_subject")
+//       .shadowRoot.querySelector("#iwe-autocomplete-78");
+//   } catch (err) {
+//     return null;
+//   }
+// }
+
+async function getClassData(subjectArea, className) {
+  const browser = await puppeteer.launch({ headless: false });
+  const page = await browser.newPage();
+  await page.goto("https://sa.ucla.edu/ro/public/soc", {
+    waitUntil: "networkidle2",
+  });
+  // await page.waitForFunction(selectShadowElement);
+  // if (!result) {
+  //   console.error("Shadow element was not found!");
+  //   return;
+  // }
+
+  // await (await page.evaluateHandle(selectShadowElement)).click();
+
+  return false;
+}
+
 function enterNewClasses() {
   const schema = {
     properties: {
@@ -77,14 +107,20 @@ function enterNewClasses() {
       },
     },
   };
-  prompt.get(schema, function (err, result) {
+  prompt.get(schema, async function (err, result) {
     const fullName = `${result.subjectArea} ${result.className}`;
     let currData = JSON.parse(fs.readFileSync("./classes.json"));
     if (currData.hasOwnProperty(fullName)) {
       console.log("Class already exists");
-      main();
+    } else {
+      console.log("Retrieving class info...");
+      const addedClass = await getClassData(
+        result.subjectArea,
+        result.className
+      );
+      if (!addedClass) console.log("Class not found");
     }
-    console.log("Retrieving class info...");
+    main();
   });
 }
 
