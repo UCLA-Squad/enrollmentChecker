@@ -1,7 +1,8 @@
 module.exports = {
     "env": {
         "browser": true,
-        "es2021": true
+        "es2021": true,
+        "jest/globals": true,
     },
     "extends": "eslint:recommended",
     "overrides": [
@@ -11,5 +12,7 @@ module.exports = {
         "sourceType": "module"
     },
     "rules": {
-    }
+        "semi": [2, "always"]
+    },
+    plugins: ["jest"]
 }
