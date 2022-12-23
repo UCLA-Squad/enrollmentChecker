@@ -1,8 +1,88 @@
 {
-    
-    "COM SCI 131": [
-        "https://sa.ucla.edu/ro/Public/SOC/Results/ClassDetail?term_cd=22F&subj_area_cd=COM%20SCI&crs_catlg_no=0131%20%20%20%20&class_id=187510200&class_no=%20001%20%20",
-        "https://sa.ucla.edu/ro/ClassSearch/Results?SubjectAreaName=Computer+Science+(COM+SCI)&CrsCatlgName=131+-+Programming+Languages&t=22F&sBy=subject&subj=COM+SCI&catlg=0131&cls_no=%25&undefined=Go&IsClassExchange=true&dropClassId=187787202&btnIsInIndex=btn_inIndex"
-    ]
-}
 
+    "COM SCI 143": [
+        "https://sa.ucla.edu/ro/Public/SOC/Results/ClassDetail?term_cd=23W&subj_area_cd=COM%20SCI&crs_catlg_no=0143%20%20%20%20&class_id=187590200&class_no=%20001%20%20",
+        "https://sa.ucla.edu/ro/ClassSearch/Results?SubjectAreaName=Computer+Science+(COM+SCI)&CrsCatlgName=143+-+Data+Management+Systems&t=23W&sBy=subject&subj=COM+SCI&catlg=0143&cls_no=%25&undefined=Go&IsClassExchange=true&dropClassId=&btnIsInIndex=btn_inIndex"
+    ],
+
+    "EC ENGR 188": [
+        "https://sa.ucla.edu/ro/Public/SOC/Results/ClassDetail?term_cd=23W&subj_area_cd=EC%20ENGR&crs_catlg_no=0188%20%20%20%20&class_id=439828100&class_no=%20001%20%20",
+        "https://sa.ucla.edu/ro/ClassSearch/Results?SubjectAreaName=Electrical+and+Computer+Engineering+(EC+ENGR)&CrsCatlgName=188+-+Secure+Computer+Systems&t=23W&sBy=subject&subj=EC+ENGR&catlg=0188&cls_no=+001++&undefined=Go&IsClassExchange=true&dropClassId=&btnIsInIndex=btn_inIndex"
+    ],
+
+    "MGMT 108 #2": [
+        "https://sa.ucla.edu/ro/Public/SOC/Results/ClassDetail?term_cd=23W&subj_area_cd=MGMT%20%20%20&crs_catlg_no=0108%20%20%20%20&class_id=260320201&class_no=%20002%20%20",
+        "https://sa.ucla.edu/ro/ClassSearch/Results?SubjectAreaName=Management+(MGMT)&CrsCatlgName=108+-+Business+Law&t=23W&sBy=subject&subj=MGMT+++&catlg=0108&cls_no=%25&undefined=Go&IsClassExchange=true&dropClassId=&btnIsInIndex=btn_inIndex"
+    ],
+
+    "EC ENGR C147": [
+        "https://sa.ucla.edu/ro/Public/SOC/Results/ClassDetail?term_cd=23W&subj_area_cd=EC%20ENGR&crs_catlg_no=0147%20%20C%20&class_id=439582100&class_no=%20001%20%20",
+        "https://sa.ucla.edu/ro/ClassSearch/Results?SubjectAreaName=Electrical+and+Computer+Engineering+(EC+ENGR)&CrsCatlgName=C147+-+Neural+Networks+and+Deep+Learning&t=23W&sBy=subject&subj=EC+ENGR&catlg=0147++C&cls_no=%25&undefined=Go&IsClassExchange=true&dropClassId=&btnIsInIndex=btn_inIndex"
+    ],
+
+    "PHYSICS 5A #2": [
+        "https://sa.ucla.edu/ro/Public/SOC/Results/ClassDetail?term_cd=23W&subj_area_cd=PHYSICS&crs_catlg_no=0005A%20%20%20&class_id=318025220&class_no=%20003%20%20",
+        "https://sa.ucla.edu/ro/ClassSearch/Results?SubjectAreaName=Physics&CrsCatlgName=5A+-+Physics+for+Life+Sciences+Majors%3A+Mechanics+and+Energy&t=23W&sBy=subject&subj=PHYSICS&catlg=0005A&cls_no=%25&undefined=Go&IsClassExchange=true&dropClassId=&btnIsInIndex=btn_inIndex"
+    ],
+
+    "COM SCI 35L": [
+        "https://sa.ucla.edu/ro/Public/SOC/Results/ClassDetail?term_cd=23W&subj_area_cd=COM%20SCI&crs_catlg_no=0035L%20%20%20&class_id=187105200&class_no=%20001%20%20",
+        "https://sa.ucla.edu/ro/ClassSearch/Results?SubjectAreaName=Computer+Science+(COM+SCI)&CrsCatlgName=35L+-+Software+Construction&t=23W&sBy=subject&subj=COM+SCI&catlg=0035L&cls_no=%25&undefined=Go&IsClassExchange=true&dropClassId=&btnIsInIndex=btn_inIndex"
+    ],
+
+    "COM SCI 118": [
+        "https://sa.ucla.edu/ro/Public/SOC/Results/ClassDetail?term_cd=23W&subj_area_cd=COM%20SCI&crs_catlg_no=0118%20%20%20%20&class_id=187350200&class_no=%20001%20%20",
+        "https://sa.ucla.edu/ro/ClassSearch/Results?SubjectAreaName=Computer+Science+(COM+SCI)&CrsCatlgName=118+-+Computer+Network+Fundamentals&t=23W&sBy=subject&subj=COM+SCI&catlg=0118&cls_no=%25&undefined=Go&IsClassExchange=true&dropClassId=&btnIsInIndex=btn_inIndex"
+    ],
+
+    "COM SCI 161": [
+        "https://sa.ucla.edu/ro/Public/SOC/Results/ClassDetail?term_cd=23W&subj_area_cd=COM%20SCI&crs_catlg_no=0161%20%20%20%20&class_id=187696200&class_no=%20001%20%20",
+        "https://sa.ucla.edu/ro/ClassSearch/Results?SubjectAreaName=Computer+Science+(COM+SCI)&CrsCatlgName=161+-+Fundamentals+of+Artificial+Intelligence&t=23W&sBy=subject&subj=COM+SCI&catlg=0161&cls_no=%25&undefined=Go&IsClassExchange=true&dropClassId=&btnIsInIndex=btn_inIndex"
+    ],
+
+    "MATH 170E #2": [
+        "https://sa.ucla.edu/ro/Public/SOC/Results/ClassDetail?term_cd=23W&subj_area_cd=MATH%20%20%20&crs_catlg_no=0170E%20%20%20&class_id=262720220&class_no=%20003%20%20",
+        "https://sa.ucla.edu/ro/ClassSearch/Results?SubjectAreaName=Mathematics+(MATH)&CrsCatlgName=170E+-+Introduction+to+Probability+and+Statistics+1%3A+Probability&t=23W&sBy=subject&subj=MATH+++&catlg=0170E&cls_no=%25&undefined=Go&IsClassExchange=true&dropClassId=&btnIsInIndex=btn_inIndex"
+    ],
+
+    "MATH 170E #1": [
+        "https://sa.ucla.edu/ro/Public/SOC/Results/ClassDetail?term_cd=23W&subj_area_cd=MATH%20%20%20&crs_catlg_no=0170E%20%20%20&class_id=262720200&class_no=%20001%20%20",
+        "https://sa.ucla.edu/ro/ClassSearch/Results?SubjectAreaName=Mathematics+(MATH)&CrsCatlgName=170E+-+Introduction+to+Probability+and+Statistics+1%3A+Probability&t=23W&sBy=subject&subj=MATH+++&catlg=0170E&cls_no=%25&undefined=Go&IsClassExchange=true&dropClassId=&btnIsInIndex=btn_inIndex"
+    ],
+
+    "PHYSICS 5A #1": [
+        "https://sa.ucla.edu/ro/Public/SOC/Results/ClassDetail?term_cd=23W&subj_area_cd=PHYSICS&crs_catlg_no=0005A%20%20%20&class_id=318025210&class_no=%20002%20%20",
+        "https://sa.ucla.edu/ro/ClassSearch/Results?SubjectAreaName=Physics&CrsCatlgName=5A+-+Physics+for+Life+Sciences+Majors%3A+Mechanics+and+Energy&t=23W&sBy=subject&subj=PHYSICS&catlg=0005A&cls_no=%25&undefined=Go&IsClassExchange=true&dropClassId=&btnIsInIndex=btn_inIndex"
+    ],
+
+    "COM SCI M152A #1": [
+        "https://sa.ucla.edu/ro/Public/SOC/Results/ClassDetail?term_cd=23W&subj_area_cd=COM%20SCI&crs_catlg_no=0152A%20M%20&class_id=187686202&class_no=%20002%20%20",
+        "https://sa.ucla.edu/ro/ClassSearch/Results?SubjectAreaName=Computer+Science+(COM+SCI)&CrsCatlgName=M152A+-+Introductory+Digital+Design+Laboratory&t=23W&sBy=subject&subj=COM+SCI&catlg=0152A+M&cls_no=%25&undefined=Go&IsClassExchange=true&dropClassId=&btnIsInIndex=btn_inIndex"
+    ],
+
+    "COM SCI M152A #2": [
+        "https://sa.ucla.edu/ro/Public/SOC/Results/ClassDetail?term_cd=23W&subj_area_cd=COM%20SCI&crs_catlg_no=0152A%20M%20&class_id=187686202&class_no=%20002%20%20",
+        "https://sa.ucla.edu/ro/ClassSearch/Results?SubjectAreaName=Computer+Science+(COM+SCI)&CrsCatlgName=M152A+-+Introductory+Digital+Design+Laboratory&t=23W&sBy=subject&subj=COM+SCI&catlg=0152A+M&cls_no=%25&undefined=Go&IsClassExchange=true&dropClassId=&btnIsInIndex=btn_inIndex"
+    ],
+
+    "COM SCI M152A #3": [
+        "https://sa.ucla.edu/ro/Public/SOC/Results/ClassDetail?term_cd=23W&subj_area_cd=COM%20SCI&crs_catlg_no=0152A%20M%20&class_id=187686203&class_no=%20003%20%20",
+        "https://sa.ucla.edu/ro/ClassSearch/Results?SubjectAreaName=Computer+Science+(COM+SCI)&CrsCatlgName=M152A+-+Introductory+Digital+Design+Laboratory&t=23W&sBy=subject&subj=COM+SCI&catlg=0152A+M&cls_no=%25&undefined=Go&IsClassExchange=true&dropClassId=&btnIsInIndex=btn_inIndex"
+    ],
+
+    "COM SCI M152A #4": [
+        "https://sa.ucla.edu/ro/Public/SOC/Results/ClassDetail?term_cd=23W&subj_area_cd=COM%20SCI&crs_catlg_no=0152A%20M%20&class_id=187686204&class_no=%20004%20%20",
+        "https://sa.ucla.edu/ro/ClassSearch/Results?SubjectAreaName=Computer+Science+(COM+SCI)&CrsCatlgName=M152A+-+Introductory+Digital+Design+Laboratory&t=23W&sBy=subject&subj=COM+SCI&catlg=0152A+M&cls_no=%25&undefined=Go&IsClassExchange=true&dropClassId=&btnIsInIndex=btn_inIndex"
+    ],
+
+    "COM SCI M152A #5": [
+        "https://sa.ucla.edu/ro/Public/SOC/Results/ClassDetail?term_cd=23W&subj_area_cd=COM%20SCI&crs_catlg_no=0152A%20M%20&class_id=187686205&class_no=%20005%20%20",
+        "https://sa.ucla.edu/ro/ClassSearch/Results?SubjectAreaName=Computer+Science+(COM+SCI)&CrsCatlgName=M152A+-+Introductory+Digital+Design+Laboratory&t=23W&sBy=subject&subj=COM+SCI&catlg=0152A+M&cls_no=%25&undefined=Go&IsClassExchange=true&dropClassId=&btnIsInIndex=btn_inIndex"
+    ],
+
+    "COM SCI M152A #6": [
+        "https://sa.ucla.edu/ro/Public/SOC/Results/ClassDetail?term_cd=23W&subj_area_cd=COM%20SCI&crs_catlg_no=0152A%20M%20&class_id=187686206&class_no=%20006%20%20",
+        "https://sa.ucla.edu/ro/ClassSearch/Results?SubjectAreaName=Computer+Science+(COM+SCI)&CrsCatlgName=M152A+-+Introductory+Digital+Design+Laboratory&t=23W&sBy=subject&subj=COM+SCI&catlg=0152A+M&cls_no=%25&undefined=Go&IsClassExchange=true&dropClassId=&btnIsInIndex=btn_inIndex"
+    ]
+
+}
