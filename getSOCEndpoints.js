@@ -29,8 +29,29 @@ async function captureWithPagination(browser, SOCPage) {
   const page = await browser.newPage();
   const endpoints = [];
   await page.goto(SOCPage);
+  await page.waitForNetworkIdle();
 
-  endpoints.push(...(await captureSOCHTTPRequests(page)));
+  // Bad code, fix later
+  const pageLinks = await page.evaluate(() => {
+    let elements = Array.from(document.querySelector("#block-mainpagecontent > div > div > div > div > ucla-sa-soc-app").shadowRoot.querySelectorAll("#divPagination > div:nth-child(2) > ul > li > button"));
+    return elements;
+  });
+
+  let currPage = 0;
+  const numberOfPages = pageLinks.length;
+
+  do {
+    endpoints.push(...(await captureSOCHTTPRequests(page)));
+    currPage++;
+    if (numberOfPages !== 0) {
+      await page.evaluate((currPage) => {
+        document.querySelector("#block-mainpagecontent > div > div > div > div > ucla-sa-soc-app").shadowRoot.querySelectorAll("#divPagination > div:nth-child(2) > ul > li > button")[currPage - 1].click();
+      }, currPage);
+      await page.waitForNetworkIdle();
+    }
+  } while (currPage < numberOfPages)
+
+
   await page.close();
   return endpoints;
 }
@@ -56,7 +77,7 @@ async function main() {
   const SOCURL = "https://sa.ucla.edu/ro/public/soc/Results?SubjectAreaName=Mathematics+(MATH)&t=23W&sBy=subject&subj=MATH+++&catlg=&cls_no=&undefined=Go&btnIsInIndex=btn_inIndex";
 
   const capturedSOCURLs = await captureWithPagination(browser, SOCURL);
-  // console.log(capturedSOCURLs);
+  console.log(capturedSOCURLs);
 
   await browser.close();
 }
