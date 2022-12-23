@@ -56,7 +56,7 @@ async function main() {
   const SOCURL = "https://sa.ucla.edu/ro/public/soc/Results?SubjectAreaName=Mathematics+(MATH)&t=23W&sBy=subject&subj=MATH+++&catlg=&cls_no=&undefined=Go&btnIsInIndex=btn_inIndex";
 
   const capturedSOCURLs = await captureWithPagination(browser, SOCURL);
-  console.log(capturedSOCURLs);
+  // console.log(capturedSOCURLs);
 
   await browser.close();
 }
