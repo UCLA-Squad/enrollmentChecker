@@ -6,17 +6,23 @@ async function captureSOCHTTPRequests(page) {
 
   await page.setRequestInterception(true);
 
-  await page.on("request", (request) => {
-    if (request.resourceType() === "xhr") {
-      endpoints.push(request.url());
+  await page.on("request", request => {
+    const requestUrl = request.url();
+    if (request.resourceType() === "xhr" && requestUrl.startsWith("https://sa.ucla.edu/ro/public/soc/Results/GetCourseSummary?")) {
+      endpoints.push(requestUrl);
     }
-    request.continue();
+    // See: https://github.com/puppeteer/puppeteer/issues/3853
+    return Promise.resolve().then(() => request.continue()).catch(e => { });
   });
 
   await page.waitForNetworkIdle();
 
   await page.evaluate(() => {
-    const button = document.querySelector("#block-mainpagecontent > div > div > div > div > ucla-sa-soc-app").shadowRoot.querySelector("#expandAll")
+    const button = document
+      .querySelector("#block-mainpagecontent > div > div > div > div > ucla-sa-soc-app")
+      .shadowRoot
+      .querySelector("#expandAll")
+
     button.click();
   });
 
@@ -31,29 +37,74 @@ async function captureWithPagination(browser, SOCPage) {
   await page.goto(SOCPage);
   await page.waitForNetworkIdle();
 
-  // Bad code, fix later
-  const pageLinks = await page.evaluate(() => {
-    let elements = Array.from(document.querySelector("#block-mainpagecontent > div > div > div > div > ucla-sa-soc-app").shadowRoot.querySelectorAll("#divPagination > div:nth-child(2) > ul > li > button"));
-    return elements;
-  });
-
   let currPage = 0;
-  const numberOfPages = pageLinks.length;
+  let numberOfPages = -1;
 
   do {
     endpoints.push(...(await captureSOCHTTPRequests(page)));
+
+    numberOfPages = await page.evaluate((currPage) => {
+      try {
+        const pageHandlers = document
+          .querySelector("#block-mainpagecontent > div > div > div > div > ucla-sa-soc-app")
+          .shadowRoot
+          .querySelectorAll("#divPagination > div:nth-child(2) > ul > li > button");
+        pageHandlers[currPage].click();
+        return Array.from(pageHandlers).length;
+      } catch (err) {
+        return -1;
+      }
+    }, currPage);
     currPage++;
-    if (numberOfPages !== 0) {
-      await page.evaluate((currPage) => {
-        document.querySelector("#block-mainpagecontent > div > div > div > div > ucla-sa-soc-app").shadowRoot.querySelectorAll("#divPagination > div:nth-child(2) > ul > li > button")[currPage - 1].click();
-      }, currPage);
-      await page.waitForNetworkIdle();
+
+    if (numberOfPages === -1) {
+      break;
     }
+    await page.waitForNetworkIdle();
   } while (currPage < numberOfPages)
 
-
   await page.close();
-  return endpoints;
+
+  // Remove any possible duplicates
+  return [...(new Set(endpoints))];
+}
+
+async function navigateToSubjectAreaPage(browser, SOCPage, quarter) {
+  const page = await browser.newPage();
+  await page.goto(SOCPage);
+  await page.waitForNetworkIdle();
+
+  // Select the quarter to scrape
+  await page.evaluate((quarter) => {
+    document.querySelector("#block-mainpagecontent > div > div > div > div > ucla-sa-soc-app")
+      .shadowRoot
+      .querySelector("#optSelectTerm")
+      .value = quarter;
+  }, quarter);
+
+  await page.waitForNetworkIdle();
+
+  // Search by subject area
+  await page.evaluate(() => {
+    document.querySelector("#block-mainpagecontent > div > div > div > div > ucla-sa-soc-app")
+      .shadowRoot
+      .querySelector("#search_by")
+      .value = "subject";
+  });
+
+  const subjectAreas = await page.evaluate(() => {
+    const subjectAreaOptions = Array.from(document
+      .querySelector("#block-mainpagecontent > div > div > div > div > ucla-sa-soc-app")
+      .shadowRoot
+      .querySelector("#select_filter_subject")
+      .shadowRoot
+      .querySelectorAll("#dropdownitems > div"));
+
+    return subjectAreaOptions.map((subjectArea) => subjectArea.textContent);
+  });
+
+  console.log(subjectAreas);
+  await page.close();
 }
 
 // For experimenting with the SOC endpoints to figure out if there's a way to generate the links without scraping the SOC website
@@ -74,10 +125,13 @@ async function main() {
     headless: false, args: [
       '--user-data-dir=/Users/jasontay/Library/Application Support/Google/Chrome/Default']
   });
+  // const SOCURL = "https://sa.ucla.edu/ro/public/soc"
+  // await navigateToSubjectAreaPage(browser, SOCURL, "23W");
+
   const SOCURL = "https://sa.ucla.edu/ro/public/soc/Results?SubjectAreaName=Mathematics+(MATH)&t=23W&sBy=subject&subj=MATH+++&catlg=&cls_no=&undefined=Go&btnIsInIndex=btn_inIndex";
 
   const capturedSOCURLs = await captureWithPagination(browser, SOCURL);
-  console.log(capturedSOCURLs);
+  console.log(capturedSOCURLs.length);
 
   await browser.close();
 }
