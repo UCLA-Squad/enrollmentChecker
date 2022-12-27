@@ -12,7 +12,6 @@
   "author": "Jason Tay <jtay20@g.ucla.edu>",
   "license": "ISC",
   "dependencies": {
-    "fs": "^0.0.1-security",
     "node-notifier": "^10.0.1",
     "open": "^8.4.0",
     "play-sound": "^1.1.5",
