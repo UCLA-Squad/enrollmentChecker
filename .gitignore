@@ -1,3 +1,11 @@
+# Data files
+subjectAreas.txt
+subjectAreasURLs.txt
+output.json
+
+# Dev files
+/dev
+
 # Logs
 logs
 *.log
