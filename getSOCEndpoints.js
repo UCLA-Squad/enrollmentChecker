@@ -1,4 +1,5 @@
 import puppeteer from "puppeteer";
+import fs from "fs";
 
 // Capture the endpoints for each subject area page
 async function captureSOCHTTPRequests(page) {
@@ -21,7 +22,7 @@ async function captureSOCHTTPRequests(page) {
     const button = document
       .querySelector("#block-mainpagecontent > div > div > div > div > ucla-sa-soc-app")
       .shadowRoot
-      .querySelector("#expandAll")
+      .querySelector("#expandAll");
 
     button.click();
   });
@@ -61,7 +62,7 @@ async function captureWithPagination(browser, SOCPage) {
       break;
     }
     await page.waitForNetworkIdle();
-  } while (currPage < numberOfPages)
+  } while (currPage <= numberOfPages)
 
   await page.close();
 
@@ -69,8 +70,9 @@ async function captureWithPagination(browser, SOCPage) {
   return [...(new Set(endpoints))];
 }
 
-async function navigateToSubjectAreaPage(browser, SOCPage, quarter) {
+async function getSubjectAreas(browser, SOCPage, quarter) {
   const page = await browser.newPage();
+  const SOCURLS = {};
   await page.goto(SOCPage);
   await page.waitForNetworkIdle();
 
@@ -103,8 +105,9 @@ async function navigateToSubjectAreaPage(browser, SOCPage, quarter) {
     return subjectAreaOptions.map((subjectArea) => subjectArea.textContent);
   });
 
-  console.log(subjectAreas);
+  await page.waitForNetworkIdle();
   await page.close();
+  return subjectAreas
 }
 
 // For experimenting with the SOC endpoints to figure out if there's a way to generate the links without scraping the SOC website
@@ -125,13 +128,43 @@ async function main() {
     headless: false, args: [
       '--user-data-dir=/Users/jasontay/Library/Application Support/Google/Chrome/Default']
   });
-  // const SOCURL = "https://sa.ucla.edu/ro/public/soc"
-  // await navigateToSubjectAreaPage(browser, SOCURL, "23W");
+  const SOCURL = "https://sa.ucla.edu/ro/public/soc"
+  const subjectAreas = await getSubjectAreas(browser, SOCURL, "23W");
 
-  const SOCURL = "https://sa.ucla.edu/ro/public/soc/Results?SubjectAreaName=Mathematics+(MATH)&t=23W&sBy=subject&subj=MATH+++&catlg=&cls_no=&undefined=Go&btnIsInIndex=btn_inIndex";
+  // TODO: put this into a function
+  await fs.readFileSync("subjectAreas.txt", "utf8").split("\n")
+    .forEach(async (subjectArea) => {
+      console.log(subjectArea);
+      let subjectAreaLongName;
+      let subjectAreaShortName;
 
-  const capturedSOCURLs = await captureWithPagination(browser, SOCURL);
-  console.log(capturedSOCURLs.length);
+      if (!subjectArea.includes("(")) {
+        subjectAreaLongName = subjectArea
+          .trim()
+          .replace(/ /g, "+");
+        subjectAreaShortName = subjectArea
+          .trim()
+          .replace(/ /g, "+");
+      } else {
+        subjectAreaLongName = subjectArea
+          .split("(")[0]
+          .trim()
+          .replace(/ /g, "+");
+        subjectAreaShortName = subjectArea
+          .split("(")[1]
+          .split(")")[0]
+          .trim()
+          .replace(/ /g, "+");
+      }
+
+      const SOCURL = `https://sa.ucla.edu/ro/public/soc/Results?SubjectAreaName=${subjectAreaLongName}+(${subjectAreaShortName})&t=23W&sBy=subject&subj=${subjectAreaShortName.padEnd(7, "+")}&catlg=&cls_no=&undefined=Go&btnIsInIndex=btn_inIndex`;
+      // const capturedSOCURLs = await captureWithPagination(browser, SOCURL);
+    });
+
+  // const SOCURL = "https://sa.ucla.edu/ro/public/soc/Results?SubjectAreaName=Computer+Science+(COM+SCI)&t=23W&sBy=subject&subj=COM+SCI&catlg=&cls_no=&undefined=Go&btnIsInIndex=btn_inIndex";
+
+  // const capturedSOCURLs = await captureWithPagination(browser, SOCURL);
+  // console.log(capturedSOCURLs.length);
 
   await browser.close();
 }
