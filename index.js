@@ -13,7 +13,10 @@ import robot from "robotjs";
 const classesToTrack = JSON.parse(fs.readFileSync("./classes.json"));
 
 async function scrape(course) {
-  const browser = await puppeteer.launch();
+  const browser = await puppeteer.launch({
+    headless: true, args: [
+      '--user-data-dir=/Users/jasontay/Library/Application Support/Google/Chrome/Default']
+  });
   const page = await browser.newPage();
   await page.goto(course[0]);
 
@@ -43,10 +46,11 @@ async function scrape(course) {
 
 async function notifyOnStatusChange() {
   let state = false;
-  for (course in classesToTrack) {
+  for (const course in classesToTrack) {
     const currData = await scrape(classesToTrack[course]);
     if (currData.split(" ")[0] !== "Closed:") {
       console.log(`${course} is now open!`);
+      console.log(currData);
       open(classesToTrack[course][1]);
       player.play("alertSound.mp3", function (err) {
         if (err) throw err;
@@ -55,7 +59,9 @@ async function notifyOnStatusChange() {
         title: "CLASS OPENED",
         message: `${course} is now open!`,
       });
+      // botTextMessage(course);
       state = true;
+      exit(0);
     }
   }
   console.log(
@@ -63,6 +69,19 @@ async function notifyOnStatusChange() {
       ? "Classes status changed"
       : `No status changed ${new Date().toLocaleString()}`
   );
+}
+
+async function botTextMessage(className) {
+  robot.moveMouse(1351, 1030);
+  robot.mouseClick();
+  robot.typeString(className);
+  await sleep(3000);
+  function sleep(ms) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, ms);
+    });
+  }
+  robot.keyTap("enter");
 }
 
 // async function selectShadowElement() {
@@ -91,7 +110,7 @@ async function getClassData(subjectArea, className) {
   // }
 
   // await (await page.evaluateHandle(selectShadowElement)).click();
-
+  await browser.close();
   return false;
 }
 
