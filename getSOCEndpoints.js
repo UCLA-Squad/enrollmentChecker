@@ -31,3 +31,41 @@ async function captureSOCHTTPRequests(page) {
 
   return endpoints;
 }
+
+async function captureWithPagination(browser, SOCPage) {
+  const page = await browser.newPage();
+  const endpoints = [];
+  await page.goto(SOCPage);
+  await page.waitForNetworkIdle();
+
+  let currPage = 0;
+  let numberOfPages = -1;
+
+  do {
+    endpoints.push(...(await captureSOCHTTPRequests(page)));
+
+    numberOfPages = await page.evaluate((currPage) => {
+      try {
+        const pageHandlers = document
+          .querySelector("#block-mainpagecontent > div > div > div > div > ucla-sa-soc-app")
+          .shadowRoot
+          .querySelectorAll("#divPagination > div:nth-child(2) > ul > li > button");
+        pageHandlers[currPage].click();
+        return Array.from(pageHandlers).length;
+      } catch (err) {
+        return -1;
+      }
+    }, currPage);
+    currPage++;
+
+    if (numberOfPages === -1) {
+      break;
+    }
+    await page.waitForNetworkIdle();
+  } while (currPage <= numberOfPages)
+
+  await page.close();
+
+  // Remove any possible duplicates
+  return [...(new Set(endpoints))];
+}
