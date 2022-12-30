@@ -1,11 +1,14 @@
+import { exit } from "process";
+
 // Put the SOC links of the filled classes you want to watch here
-const { freq } = require("./constants.js"),
-  puppeteer = require("puppeteer"),
-  open = require("open"),
-  player = require("play-sound")((opts = {})),
-  notifier = require("node-notifier"),
-  prompt = require("prompt"),
-  fs = require("fs");
+import { freq } from "./constants.js";
+import puppeteer from "puppeteer";
+import open from "open";
+import player from "play-sound";
+import notifier from "node-notifier";
+import prompt from "prompt";
+import fs from "fs";
+import robot from "robotjs";
 
 const classesToTrack = JSON.parse(fs.readFileSync("./classes.json"));
 
