@@ -69,3 +69,43 @@ async function captureWithPagination(browser, SOCPage) {
   // Remove any possible duplicates
   return [...(new Set(endpoints))];
 }
+
+async function getSubjectAreas(browser, SOCPage, quarter) {
+  const page = await browser.newPage();
+  const SOCURLS = {};
+  await page.goto(SOCPage);
+  await page.waitForNetworkIdle();
+
+  // Select the quarter to scrape
+  await page.evaluate((quarter) => {
+    document.querySelector("#block-mainpagecontent > div > div > div > div > ucla-sa-soc-app")
+      .shadowRoot
+      .querySelector("#optSelectTerm")
+      .value = quarter;
+  }, quarter);
+
+  await page.waitForNetworkIdle();
+
+  // Search by subject area
+  await page.evaluate(() => {
+    document.querySelector("#block-mainpagecontent > div > div > div > div > ucla-sa-soc-app")
+      .shadowRoot
+      .querySelector("#search_by")
+      .value = "subject";
+  });
+
+  const subjectAreas = await page.evaluate(() => {
+    const subjectAreaOptions = Array.from(document
+      .querySelector("#block-mainpagecontent > div > div > div > div > ucla-sa-soc-app")
+      .shadowRoot
+      .querySelector("#select_filter_subject")
+      .shadowRoot
+      .querySelectorAll("#dropdownitems > div"));
+
+    return subjectAreaOptions.map((subjectArea) => subjectArea.textContent);
+  });
+
+  await page.waitForNetworkIdle();
+  await page.close();
+  return subjectAreas
+}
