@@ -122,3 +122,51 @@ function SOCexperimenting() {
     console.log(JSON.parse(value));
   }
 }
+
+async function main() {
+  const browser = await puppeteer.launch({
+    headless: false, args: [
+      '--user-data-dir=/Users/jasontay/Library/Application Support/Google/Chrome/Default']
+  });
+  const SOCURL = "https://sa.ucla.edu/ro/public/soc"
+  const subjectAreas = await getSubjectAreas(browser, SOCURL, "23W");
+
+  // TODO: put this into a function
+  await fs.readFileSync("subjectAreas.txt", "utf8").split("\n")
+    .forEach(async (subjectArea) => {
+      console.log(subjectArea);
+      let subjectAreaLongName;
+      let subjectAreaShortName;
+
+      if (!subjectArea.includes("(")) {
+        subjectAreaLongName = subjectArea
+          .trim()
+          .replace(/ /g, "+");
+        subjectAreaShortName = subjectArea
+          .trim()
+          .replace(/ /g, "+");
+      } else {
+        subjectAreaLongName = subjectArea
+          .split("(")[0]
+          .trim()
+          .replace(/ /g, "+");
+        subjectAreaShortName = subjectArea
+          .split("(")[1]
+          .split(")")[0]
+          .trim()
+          .replace(/ /g, "+");
+      }
+
+      const SOCURL = `https://sa.ucla.edu/ro/public/soc/Results?SubjectAreaName=${subjectAreaLongName}+(${subjectAreaShortName})&t=23W&sBy=subject&subj=${subjectAreaShortName.padEnd(7, "+")}&catlg=&cls_no=&undefined=Go&btnIsInIndex=btn_inIndex`;
+      // const capturedSOCURLs = await captureWithPagination(browser, SOCURL);
+    });
+
+  // const SOCURL = "https://sa.ucla.edu/ro/public/soc/Results?SubjectAreaName=Computer+Science+(COM+SCI)&t=23W&sBy=subject&subj=COM+SCI&catlg=&cls_no=&undefined=Go&btnIsInIndex=btn_inIndex";
+
+  // const capturedSOCURLs = await captureWithPagination(browser, SOCURL);
+  // console.log(capturedSOCURLs.length);
+
+  await browser.close();
+}
+
+main();
