@@ -7,11 +7,14 @@
   "scripts": {
     "test": "jest test",
     "dev": "nodemon ./src/index.js",
-    "start": "node ./src/index.js"
+    "start": "node ./src/index.js",
+    "parse": "node ./src/parser.js"
   },
   "author": "Jason Tay <jtay20@g.ucla.edu>",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.2.2",
+    "cheerio": "^1.0.0-rc.12",
     "dotenv": "^16.0.3",
     "node-notifier": "^10.0.1",
     "open": "^8.4.0",
