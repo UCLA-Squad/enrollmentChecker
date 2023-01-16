@@ -2,7 +2,7 @@ import cheerio from 'cheerio'
 import axios from 'axios'
 import fs from 'fs'
 
-async function parseFromSOCURL(SOCURL) {
+export async function parseFromSOCURL(SOCURL) {
   // Request the data from the SOC URL
   const res = await axios.get(SOCURL).catch(err => console.error(err))
   if (res == null || (res.status < 200 || res.status >= 300)) {
@@ -172,4 +172,4 @@ export async function generateClassToSOCRequestMapping() {
   fs.writeFileSync('classToSOCRequestMapping.json', JSON.stringify(classToSOCRequestMapping, null, 2))
 }
 
-await generateClassToSOCRequestMapping();
+// await generateClassToSOCRequestMapping();

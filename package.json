@@ -8,7 +8,8 @@
     "test": "jest test",
     "dev": "nodemon ./src/index.js",
     "start": "node ./src/index.js",
-    "parse": "node ./src/parser.js"
+    "parse": "node ./src/parser.js",
+    "track": "node ./src/tracker.js"
   },
   "author": "Jason Tay <jtay20@g.ucla.edu>",
   "license": "ISC",
