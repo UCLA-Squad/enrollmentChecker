@@ -1,5 +1,6 @@
 import cheerio from 'cheerio'
 import axios from 'axios'
+import fs from 'fs'
 
 async function parseFromSOCURL(SOCURL) {
   // Request the data from the SOC URL
@@ -12,6 +13,11 @@ async function parseFromSOCURL(SOCURL) {
 
   // Parse the HTML
   const $ = cheerio.load(data)
+
+  // TO-DO: Handle cases where no results are available
+  // https://sa.ucla.edu/ro/public/soc/Results/GetCourseSummary?model={%22Term%22%3A%2223W%22%2C%22SubjectAreaCode%22%3A%22BIOSTAT%22%2C%22CatalogNumber%22%3A%220257M+%22%2C%22IsRoot%22%3Afalse%2C%22SessionGroup%22%3Anull%2C%22ClassNumber%22%3A%22+001++%22%2C%22SequenceNumber%22%3A%221%22%2C%22Path%22%3A%22535343200_BIOSTAT0257M%22%2C%22MultiListedClassFlag%22%3A%22n%22%2C%22Token%22%3A%22MDI1NyAgTSA1MzUzNDMyMDBfQklPU1RBVDAyNTdN%22}&FilterFlags={%22enrollment_status%22%3A%22O%2CW%2CC%2CX%2CT%2CS%22%2C%22advanced%22%3A%22y%22%2C%22meet_days%22%3A%22M%2CT%2CW%2CR%2CF%22%2C%22start_time%22%3A%229%3A00+am%22%2C%22end_time%22%3A%226%3A00+pm%22%2C%22meet_locations%22%3Anull%2C%22meet_units%22%3Anull%2C%22instructor%22%3Anull%2C%22class_career%22%3Anull%2C%22impacted%22%3A%22N%22%2C%22enrollment_restrictions%22%3Anull%2C%22enforced_requisites%22%3Anull%2C%22individual_studies%22%3Anull%2C%22summer_session%22%3Anull}&_=1673747306027
+  const hasNoResults = $('div.expanded-error-message').text().trim().includes('No results')
+  if (hasNoResults) return null
 
   // Class ID & internal ID
   const classID = $('div').attr('id')?.match(/\w+/)[0]
@@ -35,7 +41,8 @@ async function parseFromSOCURL(SOCURL) {
  * Group 5 - Match the lecture section name
  */
 const COURSE_NAME_REGEX =
-  /Select ([\w\s]+) \(([\w\s]+)\)\s+([\w\d]+)\s+-\s+([\w\s]+) ((Lec|Lab) (\d+))/
+  // /Select ([\w\s]+) (\(([\w\s]+)\)\s+)?([\w\d]+)\s+-\s+([\-\(\),:'\./\w\s]+) ((Lec|Lab|Sem|Dis|Tut|Act) (\d+))/
+  /Select(?<courseLongCategory>[\w\s]+) (?<courseShortCategory>\(([\w\s]+)\)\s+)?(?<courseNumber>[\w\s]+)\s+-\s+(?<courseDescription>[\!\$\?\-\(\),:"'\./\w\s]+) (?<lectureSection>(Lec|Lab|Sem|Dis|Tut|Act|Rgp|Stu|Fld|Qiz|Cli|Rec) ([\w\d]+))/
 
 async function parseElem($, e, internalId) {
   // Get if it's open & spots left
@@ -44,15 +51,26 @@ async function parseElem($, e, internalId) {
   const isWaitlist = statusText.includes('Waitlist')
   const isClosed = statusText.includes('Closed')
   if (isOpen) {
-    var [openSeats, totalSeats]  = statusText.match(/(\d+) of (\d+)/)?.slice(1)
+    var [openSeats, totalSeats] = statusText.match(/(\d+) of (\d+)/)?.slice(1)
   }
   else if (isWaitlist) {
-    var [totalSeats] = statusText.match(/Class Full \((\d+)\)/)?.slice(1)
+    // TO-DO: Fix edge case for where the total seats is not shown
+    // https://sa.ucla.edu/ro/public/soc/Results/GetCourseSummary?model=%7B%22Term%22%3A%2223W%22%2C%22SubjectAreaCode%22%3A%22ART++++%22%2C%22CatalogNumber%22%3A%220278++++%22%2C%22IsRoot%22%3Atrue%2C%22SessionGroup%22%3A%22%25%22%2C%22ClassNumber%22%3A%22%25%22%2C%22SequenceNumber%22%3Anull%2C%22Path%22%3A%22ART0278%22%2C%22MultiListedClassFlag%22%3A%22n%22%2C%22Token%22%3A%22MDI3OCAgICBBUlQwMjc4%22%7D&FilterFlags=%7B%22enrollment_status%22%3A%22O%2CW%2CC%2CX%2CT%2CS%22%2C%22advanced%22%3A%22y%22%2C%22meet_days%22%3A%22M%2CT%2CW%2CR%2CF%22%2C%22start_time%22%3A%228%3A00+am%22%2C%22end_time%22%3A%2210%3A00+pm%22%2C%22meet_locations%22%3Anull%2C%22meet_units%22%3Anull%2C%22instructor%22%3Anull%2C%22class_career%22%3Anull%2C%22impacted%22%3A%22N%22%2C%22enrollment_restrictions%22%3Anull%2C%22enforced_requisites%22%3Anull%2C%22individual_studies%22%3Anull%2C%22summer_session%22%3Anull%7D&_=1673746835338
+    const hasClassFull = /Class Full \((\d+)\)/.test(statusText)
+    if (hasClassFull) {
+      var [totalSeats] = statusText.match(/Class Full \((\d+)\)/)?.slice(1)
+    }
+    else totalSeats = null
+
     const waitlistText = $(`div#${internalId}-waitlist_data`).text().trim()
     var [takenWaitlistSeats, totalWaitlistSeats] = waitlistText.match(/(\d+) of (\d+) Taken/)?.slice(1)
   }
   else if (isClosed) {
-    var [totalSeats] = statusText.match(/Class Full \((\d+)\)/)?.slice(1)
+    const isClosedByDept = /Closed by Dept/.test(statusText)
+    if (isClosedByDept) var totalSeats = 0
+    else {
+      var [totalSeats] = statusText.match(/Class Full \((\d+)\)/)?.slice(1)
+    }
   }
 
   // Get waitlist status
@@ -68,17 +86,21 @@ async function parseElem($, e, internalId) {
 
   // Get course name information
   const courseFullNameInfo = $(e).find('.screenReaderOnly').text().trim()
-  const [
-    _,
-    // courseFullNameInfo,
+  let {
     courseLongCategory,
     courseShortCategory,
     courseNumber,
     courseDescription,
     lectureSection,
-  ] = courseFullNameInfo.match(COURSE_NAME_REGEX)
+  } = courseFullNameInfo.match(COURSE_NAME_REGEX).groups
 
-  return {  
+  // Handle the case where short category is same as course long name
+  if (courseShortCategory == null) {
+    // Short category is same as upper case long category
+    courseShortCategory = courseLongCategory.toUpperCase();
+  }
+
+  return {
     isOpen,
     isWaitlisted,
     isClosed,
@@ -100,13 +122,55 @@ async function parseElem($, e, internalId) {
   }
 }
 
-const SOC_URLS = [
-  'https://sa.ucla.edu/ro/public/soc/Results/GetCourseSummary?model=%7B%22Term%22%3A%2223W%22%2C%22SubjectAreaCode%22%3A%22AERO+ST%22%2C%22CatalogNumber%22%3A%220000A+++%22%2C%22IsRoot%22%3Atrue%2C%22SessionGroup%22%3A%22%25%22%2C%22ClassNumber%22%3A%22%25%22%2C%22SequenceNumber%22%3Anull%2C%22Path%22%3A%22AEROST0000A%22%2C%22MultiListedClassFlag%22%3A%22n%22%2C%22Token%22%3A%22MDAwMEEgICBBRVJPU1QwMDAwQQ%3D%3D%22%7D&FilterFlags=%7B%22enrollment_status%22%3A%22O%2CW%2CC%2CX%2CT%2CS%22%2C%22advanced%22%3A%22y%22%2C%22meet_days%22%3A%22T%2CF%22%2C%22start_time%22%3A%227%3A00+am%22%2C%22end_time%22%3A%221%3A00+pm%22%2C%22meet_locations%22%3Anull%2C%22meet_units%22%3Anull%2C%22instructor%22%3Anull%2C%22class_career%22%3Anull%2C%22impacted%22%3A%22N%22%2C%22enrollment_restrictions%22%3Anull%2C%22enforced_requisites%22%3Anull%2C%22individual_studies%22%3A%22n%22%2C%22summer_session%22%3Anull%7D&_=1673153684542',
-  'https://sa.ucla.edu/ro/public/soc/Results/GetCourseSummary?model=%7B%22Term%22%3A%2223W%22%2C%22SubjectAreaCode%22%3A%22COM+SCI%22%2C%22CatalogNumber%22%3A%220031++++%22%2C%22IsRoot%22%3Atrue%2C%22SessionGroup%22%3A%22%25%22%2C%22ClassNumber%22%3A%22%25%22%2C%22SequenceNumber%22%3Anull%2C%22Path%22%3A%22COMSCI0031%22%2C%22MultiListedClassFlag%22%3A%22n%22%2C%22Token%22%3A%22MDAzMSAgICBDT01TQ0kwMDMx%22%7D&FilterFlags=%7B%22enrollment_status%22%3A%22O%2CW%2CC%2CX%2CT%2CS%22%2C%22advanced%22%3A%22y%22%2C%22meet_days%22%3A%22M%2CT%2CW%2CR%2CF%22%2C%22start_time%22%3A%228%3A00+am%22%2C%22end_time%22%3A%228%3A00+pm%22%2C%22meet_locations%22%3Anull%2C%22meet_units%22%3Anull%2C%22instructor%22%3Anull%2C%22class_career%22%3Anull%2C%22impacted%22%3Anull%2C%22enrollment_restrictions%22%3Anull%2C%22enforced_requisites%22%3Anull%2C%22individual_studies%22%3Anull%2C%22summer_session%22%3Anull%7D&_=1673150852788',
-  'https://sa.ucla.edu/ro/public/soc/Results/GetCourseSummary?model=%7B%22Term%22%3A%2223W%22%2C%22SubjectAreaCode%22%3A%22EC+ENGR%22%2C%22CatalogNumber%22%3A%220100++++%22%2C%22IsRoot%22%3Atrue%2C%22SessionGroup%22%3A%22%25%22%2C%22ClassNumber%22%3A%22%25%22%2C%22SequenceNumber%22%3Anull%2C%22Path%22%3A%22ECENGR0100%22%2C%22MultiListedClassFlag%22%3A%22n%22%2C%22Token%22%3A%22MDEwMCAgICBFQ0VOR1IwMTAw%22%7D&FilterFlags=%7B%22enrollment_status%22%3A%22O%2CW%2CC%2CX%2CT%2CS%22%2C%22advanced%22%3A%22y%22%2C%22meet_days%22%3A%22M%2CT%2CW%2CR%2CF%22%2C%22start_time%22%3A%228%3A00+am%22%2C%22end_time%22%3A%228%3A00+pm%22%2C%22meet_locations%22%3Anull%2C%22meet_units%22%3Anull%2C%22instructor%22%3Anull%2C%22class_career%22%3Anull%2C%22impacted%22%3Anull%2C%22enrollment_restrictions%22%3Anull%2C%22enforced_requisites%22%3Anull%2C%22individual_studies%22%3Anull%2C%22summer_session%22%3Anull%7D&_=1673150142127',
-  'https://sa.ucla.edu/ro/public/soc/Results/GetCourseSummary?model={%22Term%22:%2223W%22,%22SubjectAreaCode%22:%22COM%20SCI%22,%22CatalogNumber%22:%220131%20%22,%22IsRoot%22:true,%22SessionGroup%22:%22%%22,%22ClassNumber%22:%22%%22,%22SequenceNumber%22:null,%22Path%22:%22COMSCI0131%22,%22MultiListedClassFlag%22:%22n%22,%22Token%22:%22MDEzMSAgICBDT01TQ0kwMTMx%22}&FilterFlags={%22enrollment_status%22:%22O,W,C,X,T,S%22,%22advanced%22:%22y%22,%22meet_days%22:%22M,T,W,R,F%22,%22start_time%22:%228:00%20am%22,%22end_time%22:%228:00%20pm%22,%22meet_locations%22:null,%22meet_units%22:null,%22instructor%22:null,%22class_career%22:null,%22impacted%22:null,%22enrollment_restrictions%22:null,%22enforced_requisites%22:null,%22individual_studies%22:null,%22summer_session%22:null}&_=1673147382140',
-]
+export async function generateClassToSOCRequestMapping() {
 
-for (const SOC_URL of SOC_URLS) {
-  console.dir(await parseFromSOCURL(SOC_URL), { depth: 5 })
+  const SOCRequestURLs = JSON.parse(fs.readFileSync('output.valid.json', 'utf8'));
+
+  const classToSOCRequestMapping = {}
+
+  // for (let x = 0; x < SOCRequestURLs.length; x += 10) {
+  //   const SOCPromises = SOCRequestURLs.slice(x, x + 10).map(SOC_URL => parseFromSOCURL(SOC_URL))
+  //   const SOCResponses = await Promise.all(SOCPromises).catch(err => console.log(SOCRequestURLs))
+  //   for (const [offset, { classesInfo: [{ courseShortName }] }] of Object.entries(SOCResponses)) {
+  //     classToSOCRequestMapping[courseShortName] = SOCRequestURLs[offset + x]
+  //   }
+  // }
+
+  let count = 4000
+  for (const SOC_URL of SOCRequestURLs.slice(count)) {
+    try {
+      // TO-DO: Fix the Bahai edge case
+      // Most of these are decor, bahai, university studies related
+      // https://sa.ucla.edu/ro/public/soc/Results/GetCourseSummary?model=%7B%22Term%22%3A%2223W%22%2C%22SubjectAreaCode%22%3A%22IRANIAN%22%2C%22CatalogNumber%22%3A%220105B+M+%22%2C%22IsRoot%22%3Atrue%2C%22SessionGroup%22%3A%22%25%22%2C%22ClassNumber%22%3A%22%25%22%2C%22SequenceNumber%22%3Anull%2C%22Path%22%3A%22IRANIAN0105BM%22%2C%22MultiListedClassFlag%22%3A%22y%22%2C%22Token%22%3A%22MDEwNUIgTSBJUkFOSUFOMDEwNUJN%22%7D&FilterFlags=%7B%22enrollment_status%22%3A%22O%2CW%2CC%2CX%2CT%2CS%22%2C%22advanced%22%3A%22y%22%2C%22meet_days%22%3A%22M%2CT%2CW%2CR%2CF%22%2C%22start_time%22%3A%228%3A00+am%22%2C%22end_time%22%3A%226%3A00+pm%22%2C%22meet_locations%22%3Anull%2C%22meet_units%22%3Anull%2C%22instructor%22%3Anull%2C%22class_career%22%3Anull%2C%22impacted%22%3Anull%2C%22enrollment_restrictions%22%3Anull%2C%22enforced_requisites%22%3Anull%2C%22individual_studies%22%3Anull%2C%22summer_session%22%3Anull%7D&_=1673747787717
+      // TO-DO: Fix the Decor edge case
+      // https://sa.ucla.edu/ro/public/soc/Results/GetCourseSummary?model=%7B%22Term%22%3A%2223W%22%2C%22SubjectAreaCode%22%3A%22THEATER%22%2C%22CatalogNumber%22%3A%220104E+C+%22%2C%22IsRoot%22%3Atrue%2C%22SessionGroup%22%3A%22%25%22%2C%22ClassNumber%22%3A%22%25%22%2C%22SequenceNumber%22%3Anull%2C%22Path%22%3A%22THEATER0104EC%22%2C%22MultiListedClassFlag%22%3A%22n%22%2C%22Token%22%3A%22MDEwNEUgQyBUSEVBVEVSMDEwNEVD%22%7D&FilterFlags=%7B%22enrollment_status%22%3A%22O%2CW%2CC%2CX%2CT%2CS%22%2C%22advanced%22%3A%22y%22%2C%22meet_days%22%3A%22M%2CT%2CW%2CR%2CF%2CS%22%2C%22start_time%22%3A%228%3A00+am%22%2C%22end_time%22%3A%2211%3A00+pm%22%2C%22meet_locations%22%3Anull%2C%22meet_units%22%3Anull%2C%22instructor%22%3Anull%2C%22class_career%22%3Anull%2C%22impacted%22%3A%22N%22%2C%22enrollment_restrictions%22%3Anull%2C%22enforced_requisites%22%3Anull%2C%22individual_studies%22%3Anull%2C%22summer_session%22%3Anull%7D&_=1673748781251
+      // https://sa.ucla.edu/ro/public/soc/Results/GetCourseSummary?model=%7B%22Term%22%3A%2223W%22%2C%22SubjectAreaCode%22%3A%22THEATER%22%2C%22CatalogNumber%22%3A%220104E+C+%22%2C%22IsRoot%22%3Atrue%2C%22SessionGroup%22%3A%22%25%22%2C%22ClassNumber%22%3A%22%25%22%2C%22SequenceNumber%22%3Anull%2C%22Path%22%3A%22THEATER0104EC%22%2C%22MultiListedClassFlag%22%3A%22n%22%2C%22Token%22%3A%22MDEwNEUgQyBUSEVBVEVSMDEwNEVD%22%7D&FilterFlags=%7B%22enrollment_status%22%3A%22O%2CW%2CC%2CX%2CT%2CS%22%2C%22advanced%22%3A%22y%22%2C%22meet_days%22%3A%22M%2CT%2CW%2CR%2CF%2CS%22%2C%22start_time%22%3A%228%3A00+am%22%2C%22end_time%22%3A%2211%3A00+pm%22%2C%22meet_locations%22%3Anull%2C%22meet_units%22%3Anull%2C%22instructor%22%3Anull%2C%22class_career%22%3Anull%2C%22impacted%22%3A%22N%22%2C%22enrollment_restrictions%22%3Anull%2C%22enforced_requisites%22%3Anull%2C%22individual_studies%22%3Anull%2C%22summer_session%22%3Anull%7D&_=1673748781251
+      // https://sa.ucla.edu/ro/public/soc/Results/GetCourseSummary?model=%7B%22Term%22%3A%2223W%22%2C%22SubjectAreaCode%22%3A%22THEATER%22%2C%22CatalogNumber%22%3A%220404E+C+%22%2C%22IsRoot%22%3Atrue%2C%22SessionGroup%22%3A%22%25%22%2C%22ClassNumber%22%3A%22%25%22%2C%22SequenceNumber%22%3Anull%2C%22Path%22%3A%22THEATER0404EC%22%2C%22MultiListedClassFlag%22%3A%22n%22%2C%22Token%22%3A%22MDQwNEUgQyBUSEVBVEVSMDQwNEVD%22%7D&FilterFlags=%7B%22enrollment_status%22%3A%22O%2CW%2CC%2CX%2CT%2CS%22%2C%22advanced%22%3A%22y%22%2C%22meet_days%22%3A%22M%2CT%2CW%2CR%2CF%2CS%22%2C%22start_time%22%3A%228%3A00+am%22%2C%22end_time%22%3A%2211%3A00+pm%22%2C%22meet_locations%22%3Anull%2C%22meet_units%22%3Anull%2C%22instructor%22%3Anull%2C%22class_career%22%3Anull%2C%22impacted%22%3A%22N%22%2C%22enrollment_restrictions%22%3Anull%2C%22enforced_requisites%22%3Anull%2C%22individual_studies%22%3Anull%2C%22summer_session%22%3Anull%7D&_=1673748796488
+      // WTF: https://sa.ucla.edu/ro/public/soc/Results/GetCourseSummary?model=%7B%22Term%22%3A%2223W%22%2C%22SubjectAreaCode%22%3A%22UNIV+ST%22%2C%22CatalogNumber%22%3A%220010A+++%22%2C%22IsRoot%22%3Atrue%2C%22SessionGroup%22%3A%22%25%22%2C%22ClassNumber%22%3A%22%25%22%2C%22SequenceNumber%22%3Anull%2C%22Path%22%3A%22UNIVST0010A%22%2C%22MultiListedClassFlag%22%3A%22n%22%2C%22Token%22%3A%22MDAxMEEgICBVTklWU1QwMDEwQQ%3D%3D%22%7D&FilterFlags=%7B%22enrollment_status%22%3A%22O%2CW%2CC%2CX%2CT%2CS%22%2C%22advanced%22%3A%22y%22%2C%22meet_days%22%3A%22M%2CT%2CW%22%2C%22start_time%22%3A%2210%3A00+am%22%2C%22end_time%22%3A%226%3A00+pm%22%2C%22meet_locations%22%3Anull%2C%22meet_units%22%3Anull%2C%22instructor%22%3Anull%2C%22class_career%22%3Anull%2C%22impacted%22%3A%22N%22%2C%22enrollment_restrictions%22%3Anull%2C%22enforced_requisites%22%3Anull%2C%22individual_studies%22%3A%22n%22%2C%22summer_session%22%3Anull%7D&_=1673748819000
+      // WTF 2: https://sa.ucla.edu/ro/public/soc/Results/GetCourseSummary?model=%7B%22Term%22%3A%2223W%22%2C%22SubjectAreaCode%22%3A%22UNIV+ST%22%2C%22CatalogNumber%22%3A%220010A+++%22%2C%22IsRoot%22%3Atrue%2C%22SessionGroup%22%3A%22%25%22%2C%22ClassNumber%22%3A%22%25%22%2C%22SequenceNumber%22%3Anull%2C%22Path%22%3A%22UNIVST0010A%22%2C%22MultiListedClassFlag%22%3A%22n%22%2C%22Token%22%3A%22MDAxMEEgICBVTklWU1QwMDEwQQ%3D%3D%22%7D&FilterFlags=%7B%22enrollment_status%22%3A%22O%2CW%2CC%2CX%2CT%2CS%22%2C%22advanced%22%3A%22y%22%2C%22meet_days%22%3A%22M%2CT%2CW%22%2C%22start_time%22%3A%2210%3A00+am%22%2C%22end_time%22%3A%226%3A00+pm%22%2C%22meet_locations%22%3Anull%2C%22meet_units%22%3Anull%2C%22instructor%22%3Anull%2C%22class_career%22%3Anull%2C%22impacted%22%3A%22N%22%2C%22enrollment_restrictions%22%3Anull%2C%22enforced_requisites%22%3Anull%2C%22individual_studies%22%3A%22n%22%2C%22summer_session%22%3Anull%7D&_=1673748819000
+      if ([2291, 2292, 4153, 4154, 4166, 4214, 4227, 4229, 4261, 4262, 4263, 4264, 4265, 4266].includes(count)) {
+        count += 1
+        continue
+      }
+
+      const data = await parseFromSOCURL(SOC_URL)
+      if (data === null) continue
+
+      const { classesInfo: [{ courseShortName }] } = data
+      classToSOCRequestMapping[courseShortName] = SOC_URL
+      count += 1
+      console.log('count', count)
+    }
+    catch (e) {
+      console.error(e)
+      console.log(SOC_URL)
+
+      console.log(count)
+      break
+    }
+  }
+
+  fs.writeFileSync('classToSOCRequestMapping.json', JSON.stringify(classToSOCRequestMapping, null, 2))
 }
+
+await generateClassToSOCRequestMapping();
