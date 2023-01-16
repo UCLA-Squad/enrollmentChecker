@@ -99,6 +99,8 @@ async function parseElem($, e, internalId) {
     // Short category is same as upper case long category
     courseShortCategory = courseLongCategory.toUpperCase();
   }
+  courseShortCategory = courseShortCategory.replace("(", "").replace(")", "").trim()
+  lectureSection = lectureSection.replace("Class", "").trim()
 
   return {
     isOpen,
@@ -126,17 +128,9 @@ export async function generateClassToSOCRequestMapping() {
 
   const SOCRequestURLs = JSON.parse(fs.readFileSync('output.valid.json', 'utf8'));
 
-  const classToSOCRequestMapping = {}
+  const classToSOCRequestMapping = JSON.parse(fs.readFileSync('classToSOCRequestMapping.json', 'utf8'));
 
-  // for (let x = 0; x < SOCRequestURLs.length; x += 10) {
-  //   const SOCPromises = SOCRequestURLs.slice(x, x + 10).map(SOC_URL => parseFromSOCURL(SOC_URL))
-  //   const SOCResponses = await Promise.all(SOCPromises).catch(err => console.log(SOCRequestURLs))
-  //   for (const [offset, { classesInfo: [{ courseShortName }] }] of Object.entries(SOCResponses)) {
-  //     classToSOCRequestMapping[courseShortName] = SOCRequestURLs[offset + x]
-  //   }
-  // }
-
-  let count = 4000
+  let count = 0;
   for (const SOC_URL of SOCRequestURLs.slice(count)) {
     try {
       // TO-DO: Fix the Bahai edge case
@@ -148,7 +142,7 @@ export async function generateClassToSOCRequestMapping() {
       // https://sa.ucla.edu/ro/public/soc/Results/GetCourseSummary?model=%7B%22Term%22%3A%2223W%22%2C%22SubjectAreaCode%22%3A%22THEATER%22%2C%22CatalogNumber%22%3A%220404E+C+%22%2C%22IsRoot%22%3Atrue%2C%22SessionGroup%22%3A%22%25%22%2C%22ClassNumber%22%3A%22%25%22%2C%22SequenceNumber%22%3Anull%2C%22Path%22%3A%22THEATER0404EC%22%2C%22MultiListedClassFlag%22%3A%22n%22%2C%22Token%22%3A%22MDQwNEUgQyBUSEVBVEVSMDQwNEVD%22%7D&FilterFlags=%7B%22enrollment_status%22%3A%22O%2CW%2CC%2CX%2CT%2CS%22%2C%22advanced%22%3A%22y%22%2C%22meet_days%22%3A%22M%2CT%2CW%2CR%2CF%2CS%22%2C%22start_time%22%3A%228%3A00+am%22%2C%22end_time%22%3A%2211%3A00+pm%22%2C%22meet_locations%22%3Anull%2C%22meet_units%22%3Anull%2C%22instructor%22%3Anull%2C%22class_career%22%3Anull%2C%22impacted%22%3A%22N%22%2C%22enrollment_restrictions%22%3Anull%2C%22enforced_requisites%22%3Anull%2C%22individual_studies%22%3Anull%2C%22summer_session%22%3Anull%7D&_=1673748796488
       // WTF: https://sa.ucla.edu/ro/public/soc/Results/GetCourseSummary?model=%7B%22Term%22%3A%2223W%22%2C%22SubjectAreaCode%22%3A%22UNIV+ST%22%2C%22CatalogNumber%22%3A%220010A+++%22%2C%22IsRoot%22%3Atrue%2C%22SessionGroup%22%3A%22%25%22%2C%22ClassNumber%22%3A%22%25%22%2C%22SequenceNumber%22%3Anull%2C%22Path%22%3A%22UNIVST0010A%22%2C%22MultiListedClassFlag%22%3A%22n%22%2C%22Token%22%3A%22MDAxMEEgICBVTklWU1QwMDEwQQ%3D%3D%22%7D&FilterFlags=%7B%22enrollment_status%22%3A%22O%2CW%2CC%2CX%2CT%2CS%22%2C%22advanced%22%3A%22y%22%2C%22meet_days%22%3A%22M%2CT%2CW%22%2C%22start_time%22%3A%2210%3A00+am%22%2C%22end_time%22%3A%226%3A00+pm%22%2C%22meet_locations%22%3Anull%2C%22meet_units%22%3Anull%2C%22instructor%22%3Anull%2C%22class_career%22%3Anull%2C%22impacted%22%3A%22N%22%2C%22enrollment_restrictions%22%3Anull%2C%22enforced_requisites%22%3Anull%2C%22individual_studies%22%3A%22n%22%2C%22summer_session%22%3Anull%7D&_=1673748819000
       // WTF 2: https://sa.ucla.edu/ro/public/soc/Results/GetCourseSummary?model=%7B%22Term%22%3A%2223W%22%2C%22SubjectAreaCode%22%3A%22UNIV+ST%22%2C%22CatalogNumber%22%3A%220010A+++%22%2C%22IsRoot%22%3Atrue%2C%22SessionGroup%22%3A%22%25%22%2C%22ClassNumber%22%3A%22%25%22%2C%22SequenceNumber%22%3Anull%2C%22Path%22%3A%22UNIVST0010A%22%2C%22MultiListedClassFlag%22%3A%22n%22%2C%22Token%22%3A%22MDAxMEEgICBVTklWU1QwMDEwQQ%3D%3D%22%7D&FilterFlags=%7B%22enrollment_status%22%3A%22O%2CW%2CC%2CX%2CT%2CS%22%2C%22advanced%22%3A%22y%22%2C%22meet_days%22%3A%22M%2CT%2CW%22%2C%22start_time%22%3A%2210%3A00+am%22%2C%22end_time%22%3A%226%3A00+pm%22%2C%22meet_locations%22%3Anull%2C%22meet_units%22%3Anull%2C%22instructor%22%3Anull%2C%22class_career%22%3Anull%2C%22impacted%22%3A%22N%22%2C%22enrollment_restrictions%22%3Anull%2C%22enforced_requisites%22%3Anull%2C%22individual_studies%22%3A%22n%22%2C%22summer_session%22%3Anull%7D&_=1673748819000
-      if ([2291, 2292, 4153, 4154, 4166, 4214, 4227, 4229, 4261, 4262, 4263, 4264, 4265, 4266].includes(count)) {
+      if ([2291, 2292, 4153, 4154, 4166, 4214, 4215, 4227, 4229, 4261, 4262, 4263, 4264, 4265, 4266].includes(count)) {
         count += 1
         continue
       }
@@ -156,15 +150,20 @@ export async function generateClassToSOCRequestMapping() {
       const data = await parseFromSOCURL(SOC_URL)
       if (data === null) continue
 
-      const { classesInfo: [{ courseShortName }] } = data
-      classToSOCRequestMapping[courseShortName] = SOC_URL
+      const { classesInfo: [{ courseShortName, lectureSection }] } = data
+      if (classToSOCRequestMapping.hasOwnProperty(courseShortName)) {
+        classToSOCRequestMapping[courseShortName][lectureSection] = SOC_URL;
+      } else {
+        classToSOCRequestMapping[courseShortName] = {
+          [lectureSection]: SOC_URL
+        }
+      }
+      console.log(count);
       count += 1
-      console.log('count', count)
     }
     catch (e) {
       console.error(e)
       console.log(SOC_URL)
-
       console.log(count)
       break
     }
