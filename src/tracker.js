@@ -1,6 +1,7 @@
 import fs from 'fs'
 import { parseFromSOCURL } from './parser.js'
 import { freq } from './../config.js'
+import sound from 'sound-play'
 
 async function generateTrackingMap() {
     const classToSOCRequestMapping = JSON.parse(fs.readFileSync('classToSOCRequestMapping.json', 'utf8'));
@@ -34,8 +35,17 @@ async function trackClasses() {
             const { classesInfo } = await parseFromSOCURL(currSOCURL);
             for (const classInfo of classesInfo) {
                 if (classInfo.lectureSection === section) {
-                    const { isOpen } = classInfo;
-                    if (isOpen) onClassOpen(className, section);
+                    const { isOpen } = classInfo
+                    if (isOpen) {
+                        onClassOpen(className, section);
+                    } else {
+                        console.log(`${(new Date()).toLocaleDateString('en-US', {
+                            hour: 'numeric',
+                            minute: 'numeric',
+                            second: 'numeric',
+                            hour12: true
+                        })} ${className} ${section} is closed`);
+                    }
                     break;
                 }
             }
@@ -45,7 +55,8 @@ async function trackClasses() {
 
 // TODO: Implement alerting
 function onClassOpen(className, section) {
-    console.log(`${classToTrack} is open!`);
+    console.log(`${className} ${section} is open!`);
+    sound.play('static/alertSound.mp3');
 }
 
 export async function main() {
