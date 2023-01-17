@@ -31,8 +31,14 @@ async function trackClasses() {
     for (const className in SOCURLsToTrack) {
         for (const section in SOCURLsToTrack[className]) {
             const currSOCURL = SOCURLsToTrack[className][section];
-            const { isOpen } = await parseFromSOCURL(currSOCURL);
-            if (isOpen) onClassOpen(className, section);
+            const { classesInfo } = await parseFromSOCURL(currSOCURL);
+            for (const classInfo of classesInfo) {
+                if (classInfo.lectureSection === section) {
+                    const { isOpen } = classInfo;
+                    if (isOpen) onClassOpen(className, section);
+                    break;
+                }
+            }
         }
     }
 }
