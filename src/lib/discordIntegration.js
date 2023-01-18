@@ -20,13 +20,20 @@ export async function sendClassOpenMessage(className, section) {
   // Ping the Discord webhook
   try {
       await axios.post(process.env.DISCORD_WEBHOOK_URL, {
-      content: `Hi ${formattedUserIds}, ${className} ${section} is open!`,
-    })
+        content: null,
+        embeds: [
+          {
+            title: `${className} ${section} is now open!`,
+            description: `Hi ${formattedUserIds} your class is now open!`,
+            color: 5814783,
+          },
+        ],
+        attachments: [],
+      })
   }
   catch (e) {
     
   }
-
 }
 
 sendClassOpenMessage('COM SCI 180', 'LEC 1A')
