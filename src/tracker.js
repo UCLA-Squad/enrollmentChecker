@@ -2,6 +2,7 @@ import fs from 'fs'
 import { parseFromSOCURL } from './parser.js'
 import { freq } from './../config.js'
 import sound from 'sound-play'
+import { sendClassOpenMessage } from './lib/discordIntegration.js'
 
 async function generateTrackingMap() {
     const classToSOCRequestMapping = JSON.parse(fs.readFileSync('classToSOCRequestMapping.json', 'utf8'));
@@ -54,9 +55,11 @@ async function trackClasses() {
 }
 
 // TODO: Implement alerting
-function onClassOpen(className, section) {
+async function onClassOpen(className, section) {
     console.log(`${className} ${section} is open!`);
     sound.play('static/alertSound.mp3');
+
+    await sendClassOpenMessage(className, section)
 }
 
 export async function main() {
